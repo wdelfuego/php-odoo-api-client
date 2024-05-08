@@ -15,6 +15,19 @@ class Client
 {
     use ExpressionBuilderAwareTrait;
 
+    private $currentLanguage = null;
+    
+    public function setCurrentLanguage(string $locale = null)
+    {
+        $this->currentLanguage = $locale;
+    }
+    
+    public function unsetCurrentLanguage()
+    {
+        $this->setCurrentLanguage(null);
+    }
+    
+    
     /**
      * Endpoints.
      */
@@ -331,6 +344,15 @@ class Client
      */
     public function call(string $name, string $method, array $parameters = [], array $options = [])
     {
+        if($this->currentLanguage)
+        {
+            if(!isset($options['context']) || !is_array($options['context']))
+            {
+                $options['context'] = [];
+            }
+            $options['context']['lang'] = $this->currentLanguage;
+        }
+        
         $loggerContext = [
             'request_id' => uniqid('rpc', true),
             'name' => $name,
