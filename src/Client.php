@@ -342,7 +342,7 @@ class Client
     /**
      * @return mixed
      */
-    public function call(string $name, string $method, array $parameters = [], array $options = [])
+    public function call(string $name, string $method, array $parameters = [], array $options = [], $retryCount = 0)
     {
         if($this->currentLanguage)
         {
@@ -365,15 +365,30 @@ class Client
             $this->logger->debug('Calling method {name}::{method}', $loggerContext);
         }
 
-        $result = $this->objectEndpoint->call('execute_kw', [
-            $this->database,
-            $this->authenticate(),
-            $this->password,
-            $name,
-            $method,
-            $parameters,
-            $options,
-        ]);
+        try 
+        {
+            $result = $this->objectEndpoint->call('execute_kw', [
+                $this->database,
+                $this->authenticate(),
+                $this->password,
+                $name,
+                $method,
+                $parameters,
+                $options,
+            ]);
+
+        } catch(RequestException $e)
+        {
+            if ($retryCount < 3 && strpos($message, 'Cannot access to URL') !== false) {
+                // Connection failure, retry after 1 sec
+                sleep(1);
+                return $this->call($name, $method, $parameters, $options, $retryCount + 1);
+            }
+            else
+            {
+                throw $e;
+            }
+        }
 
         if ($this->logger) {
             $loggedResult = is_scalar($result) ? $result : json_encode($result);
