@@ -379,7 +379,7 @@ class Client
 
         } catch(RequestException $e)
         {
-            if ($retryCount < 3 && strpos($message, 'Cannot access to URL') !== false) {
+            if ($retryCount < 3 && strpos($e->getMessage(), 'Cannot access to URL') !== false) {
                 // Connection failure, retry after 1 sec
                 sleep(1);
                 return $this->call($name, $method, $parameters, $options, $retryCount + 1);
