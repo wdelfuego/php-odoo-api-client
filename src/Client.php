@@ -16,6 +16,7 @@ class Client
     use ExpressionBuilderAwareTrait;
 
     private $currentLanguage = null;
+    private $currentCompanyIds = [];
     
     public function setCurrentLanguage(string $locale = null)
     {
@@ -27,6 +28,15 @@ class Client
         $this->setCurrentLanguage(null);
     }
     
+    public function setCurrentCompanyIds(array $ids)
+    {
+        $this->currentCompanyIds = $ids;
+    }
+    
+    public function unsetCurrentCompanyIds()
+    {
+        $this->setCurrentCompanyIds([]);
+    }
     
     /**
      * Endpoints.
@@ -344,13 +354,19 @@ class Client
      */
     public function call(string $name, string $method, array $parameters = [], array $options = [], $retryCount = 0)
     {
+        if(!isset($options['context']) || !is_array($options['context']))
+        {
+            $options['context'] = [];
+        }
+        
         if($this->currentLanguage)
         {
-            if(!isset($options['context']) || !is_array($options['context']))
-            {
-                $options['context'] = [];
-            }
             $options['context']['lang'] = $this->currentLanguage;
+        }
+        
+        if(count($this->currentCompanyIds))
+        {
+            $options['context']['allowed_company_ids'] = [$this->currentCompanyIds];
         }
         
         $loggerContext = [
