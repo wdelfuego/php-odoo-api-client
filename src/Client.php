@@ -366,7 +366,7 @@ class Client
         
         if(count($this->currentCompanyIds))
         {
-            $options['context']['allowed_company_ids'] = [$this->currentCompanyIds];
+            $options['context']['allowed_company_ids'] = $this->currentCompanyIds;
         }
         
         $loggerContext = [
